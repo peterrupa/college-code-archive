@@ -1,0 +1,1 @@
+/home/tricycle/Programs/OpenCV/guiam_rupa_ex4/CMakeFiles/guiam_rupa_ex4_adaptive.dir

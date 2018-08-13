@@ -1,0 +1,1 @@
+/home/tricycle/Programs/OpenCV/Exer5/cc/CMakeFiles/cc.dir

@@ -1,0 +1,6 @@
+Iteration 1:
+Centroid 1: <2.0, 2.0>
+Centroid 2: <4.0, 4.0>
+Iteration 2:
+Centroid 1: <1.5, 1.5>
+Centroid 2: <4.25, 4.0>

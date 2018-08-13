@@ -1,0 +1,1 @@
+/home/tricycle/Programs/OpenCV/Exer5/exer/CMakeFiles/guiam_rupa_ex5_coins.dir

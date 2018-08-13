@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>
+        Cube
+    </title>
+    <!--Vertex Shader-->
+    <script type="x-shader/x-vertex" id="vshader">
+        attribute vec4 aPosition;
+
+        uniform mat4 uTransformationMatrix;
+        uniform mat4 uViewMatrix;
+        uniform mat4 uProjectionMatrix;
+
+        void main() {
+            gl_Position = uProjectionMatrix * uViewMatrix * uTransformationMatrix * aPosition;
+        }
+    </script>
+ 
+    <!--Fragment Shader-->
+    <script type="x-shader/x-fragment" id="fshader">
+        precision mediump float;
+
+        uniform vec4 uFragColor;
+
+        void main() {
+            gl_FragColor = uFragColor;
+        }
+    </script>
+
+    <!--Import external javascript file-->
+    <!--Helper javascript methods for initializing webgl-->
+    <script src="./lib/webgl-init.js"></script>
+    <script src="./lib/webgl-utils.js"></script>
+    <script src="./lib/webgl-debug.js"></script>
+    <script src="./lib/gl-matrix.js"></script>
+    <script src="./lib/jquery-1.12.1.min.js"></script>
+
+    <script>
+        function main() {
+            //Retrieve <canvas> element
+            var canvas = document.getElementById("main_canvas");
+            if(!canvas) {
+                console.log("Failed to retrieve the <canvas> element");
+            }
+
+            //Get the rendering context (WebGL)
+            var gl = initializeWebGL(canvas,true);
+
+            //initialize shaders program
+            var vertexShader = initializeShader(gl,"vshader");
+            var fragmentShader = initializeShader(gl, "fshader");
+            var program = initializeProgram(gl,vertexShader,fragmentShader);
+            gl.useProgram(program);
+
+            //Get the storage location of shader variables
+            var aPositionPointer = gl.getAttribLocation(program,"aPosition");
+            gl.enableVertexAttribArray(aPositionPointer);
+            var uFragColorPointer = gl.getUniformLocation(program,"uFragColor");
+            var uTransformationMatrixPointer = gl.getUniformLocation(program,"uTransformationMatrix");
+            var uModelMatrixPointer = gl.getUniformLocation(program,"uModelMatrix");
+            var uViewMatrixPointer = gl.getUniformLocation(program,"uViewMatrix");
+            var uProjectionMatrixPointer = gl.getUniformLocation(program,"uProjectionMatrix");
+            
+            gl.enable(gl.DEPTH_TEST);
+            gl.clear(gl.DEPTH_BUFFER_BIT);
+            
+            gl.disable(gl.DEPTH_TEST);
+            gl.enable(gl.BLEND);
+            
+            gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+            gl.blendEquation(gl.FUNC_ADD);
+                
+            // draw scenes
+            
+            render(-10);
+            
+            function setCamera(angle) {
+                var fieldOfViewYAxis = glMatrix.toRadian(35);
+                var aspectRatio      = canvas.width/canvas.height;
+                var nearPlane        = 0.1;
+                var farPlane         = 10;
+                
+                projectionMatrix = mat4.create();
+                mat4.perspective(projectionMatrix,fieldOfViewYAxis,aspectRatio,nearPlane,farPlane);
+                gl.uniformMatrix4fv(uProjectionMatrixPointer,false,new Float32Array(projectionMatrix));
+            
+                var lookAtPoint = [0.0,0.0,0.0,1.0];
+                var eyePoint    = [sin(angle) / 2, sin(angle), cos(angle), 1.0];
+                var upVector    = [0.0,1.0,0.0,0.0];
+                
+                viewMatrix = mat4.create();
+                mat4.lookAt(viewMatrix,eyePoint,lookAtPoint,upVector);
+                gl.uniformMatrix4fv(uViewMatrixPointer,false,new Float32Array(viewMatrix));
+            }
+            
+            function render(angle) {
+                gl.clearColor(0.0,0.0,0.0,1.0);
+                gl.clear(gl.COLOR_BUFFER_BIT);
+                
+                setCamera(angle);
+                
+                // back face
+                drawRectangle([
+                    -0.5, 0.5, 0, 1,
+                    0.5, 0.5, 0, 1,
+                    0.5, -0.5, 0, 1,
+                    -0.5, -0.5, 0, 1
+                ], {
+                    red: 0,
+                    green: 1,
+                    blue: 0, 
+                    translate: [0, 0, -0.5, 1],
+                });
+                
+                // right face
+                drawRectangle([
+                    -0.5, 0.5, 0, 1,
+                    0.5, 0.5, 0, 1,
+                    0.5, -0.5, 0, 1,
+                    -0.5, -0.5, 0, 1
+                ], {
+                    red: 0,
+                    green: 1,
+                    blue: 1, 
+                    rotateY: 90,
+                    translate: [0.5, 0, 0, 1],
+                });
+                
+                // top face
+                drawRectangle([
+                    -0.5, 0.5, 0, 1,
+                    0.5, 0.5, 0, 1,
+                    0.5, -0.5, 0, 1,
+                    -0.5, -0.5, 0, 1
+                ], {
+                    red: 0,
+                    green: 0,
+                    blue: 1, 
+                    rotateX: 90,
+                    translate: [0, 0.5, 0, 1],
+                });
+                
+                // bottom face
+                drawRectangle([
+                    -0.5, 0.5, 0, 1,
+                    0.5, 0.5, 0, 1,
+                    0.5, -0.5, 0, 1,
+                    -0.5, -0.5, 0, 1
+                ], {
+                    red: 1,
+                    green: 1,
+                    blue: 0, 
+                    rotateX: 90,
+                    translate: [0, -0.5, 0, 1],
+                });
+                
+                // left face
+                drawRectangle([
+                    -0.5, 0.5, 0, 1,
+                    0.5, 0.5, 0, 1,
+                    0.5, -0.5, 0, 1,
+                    -0.5, -0.5, 0, 1
+                ], {
+                    red: 1,
+                    green: 0,
+                    blue: 1, 
+                    rotateY: 90,
+                    translate: [-0.5, 0, 0, 1],
+                });
+                
+                // front face
+                drawRectangle([
+                    -0.5, 0.5, 0, 1,
+                    0.5, 0.5, 0, 1,
+                    0.5, -0.5, 0, 1,
+                    -0.5, -0.5, 0, 1
+                ], {
+                    red: 1,
+                    green: 0,
+                    blue: 0, 
+                    translate: [0, 0, 0.5, 1],
+                });
+                
+                requestAnimationFrame(function() {
+                    if(angle > 360) angle = 0;
+                    
+                    render(angle + 0);
+                });
+            }
+            
+            function drawRectangle(vertices, options) {
+                /*
+                    Options:
+                        rotateX (in degrees)
+                        rotateY (in degrees)
+                        rotateZ (in degrees)
+                        translate
+                        red
+                        green
+                        blue
+                */
+                
+                var transformationMatrix = mat4.create();
+                var angleOfRotation;
+                var toRadians;
+                
+                if(options.rotateX) {
+                    angleOfRotation = (360 - options.rotateX) || 0;
+                    toRadians = glMatrix.toRadian(angleOfRotation);
+                    mat4.rotateX(transformationMatrix,transformationMatrix,toRadians);
+                }
+                
+                if(options.rotateY) {
+                    angleOfRotation = (360 - options.rotateY) || 0;
+                    toRadians = glMatrix.toRadian(angleOfRotation);
+                    mat4.rotateY(transformationMatrix,transformationMatrix,toRadians);
+                }
+                
+                if(options.rotateZ) {
+                    angleOfRotation = (360 - options.rotateZ) || 0;
+                    toRadians = glMatrix.toRadian(angleOfRotation);
+                    mat4.rotateZ(transformationMatrix,transformationMatrix,toRadians);
+                }
+                
+                if(options.translate) {
+                    mat4.translate(transformationMatrix, transformationMatrix, options.translate);
+                }
+                
+                gl.uniformMatrix4fv(uTransformationMatrixPointer,false,new Float32Array(transformationMatrix));
+                
+                var buffer = gl.createBuffer();
+                gl.bindBuffer(gl.ARRAY_BUFFER,buffer);
+                gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(vertices),gl.STATIC_DRAW);
+                gl.vertexAttribPointer(aPositionPointer,4,gl.FLOAT,false,0,0);
+                gl.enableVertexAttribArray(aPositionPointer);
+                gl.uniform4f(uFragColorPointer, options.red, options.green, options.blue, 0.7);
+                gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
+            }
+            
+            function toRadians(x) {
+                return x * (Math.PI / 180);
+            }
+            
+            function cos(x) {    
+                return Math.cos(toRadians(x)) * 5;
+            }
+            
+            function sin(x) {
+                return Math.sin(toRadians(x)) * 5;
+            }
+        }
+    </script>
+    
+    <style>
+        body {
+            height: 100%;
+            background-size: cover;
+        }
+        
+        h1 {
+            font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+            color: rgba(240, 240, 240, 1);
+            text-shadow: 0px 0px 15px black;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body onload="main()">    
+    <div style="margin:auto;width:400px">
+        <canvas id="main_canvas" width="400" height="400">
+        </canvas>
+    </div>
+</body>
+
+</html>

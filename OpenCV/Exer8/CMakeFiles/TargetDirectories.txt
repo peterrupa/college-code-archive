@@ -1,0 +1,1 @@
+/home/tricycle/Programs/OpenCV/Exer8/CMakeFiles/guiam_rupa_ex8.dir

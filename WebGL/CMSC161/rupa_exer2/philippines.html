@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>
+        First WebGL Program
+    </title>
+
+    <!--Import external javascript file-->
+    <!--Helper javascript methods for initializing webgl-->
+    <script src="./lib/webgl-init.js"></script>
+    <script src="./lib/webgl-utils.js"></script>
+    <script src="./lib/webgl-debug.js"></script>
+
+    <!--Vertex Shader-->
+    <script type="x-shader/x-vertex" id="vshader">
+        //declare an attribute variable that can be accessed in our javascript program
+        attribute vec4 aPosition;
+        void main() {
+
+        //Built-in variable in GLSL ES that dictates the position of the vertex
+        gl_Position = aPosition;
+
+        //Built-in variable in GLSL ES that dictates the size of the vertex
+        gl_PointSize = 10.0;
+        }
+    </script>
+
+    <!--Fragment Shader-->
+    <script type="x-shader/x-fragment" id="fshader">
+        //specifies the precision qualifer for the variable float
+        precision mediump float;
+
+        //declare and uniform variable that can be accessed in our javascript program
+        uniform vec4 uFragColor;
+        void main() {
+
+
+        //Sets the color for every fragment created by primitive assembly
+        gl_FragColor = uFragColor;
+        }
+    </script>
+
+
+    <script>
+        function main() {
+            //Retrieve <canvas> element
+            var canvas = document.getElementById("main_canvas");
+            if(!canvas) {
+                console.log("Failed to retrieve the <canvas> element");
+            }
+
+            //Get the rendering context (WebGL)
+            var gl = initializeWebGL(canvas,true);
+
+            //initialize shaders program
+            var vertexShader = initializeShader(gl,"vshader");
+            var fragmentShader = initializeShader(gl, "fshader");
+            var program = initializeProgram(gl,vertexShader,fragmentShader);
+            gl.useProgram(program);
+
+            //clear canvas
+            gl.clearColor(0.0, 0.0, 0.0, 1.0);
+            gl.clear(gl.COLOR_BUFFER_BIT);
+
+            //Get the storage location of shader variables
+            var aPositionPointer = gl.getAttribLocation(program,"aPosition");
+            var uFragColorPointer = gl.getUniformLocation(program,"uFragColor");
+            
+            // declare buffers
+            var topRect = createBuffer([
+                -1.0, 0, 0.0, 1.0,  
+                -1.0, 1.0, 0.0, 1.0, 
+                1.0, 1.0, 0.0, 1.0, 
+                1.0, 0, 0.0, 1.0
+            ]);
+            
+            var bottomRect = createBuffer([
+                -1.0, -1.0, 0.0, 1.0,  
+                -1.0, 0, 0.0, 1.0, 
+                1.0, 0, 0.0, 1.0, 
+                1.0, -1, 0.0, 1.0
+            ]);
+            
+            var triangleMain = createBuffer([
+                -1.0, -1.0, 0.0, 1.0,
+                -1.0, 1.0, 0.0, 1.0,
+                -0.10, 0, 0.0, 1.0
+            ]);
+            
+            var sunCircleVertices = createCircle([
+                -0.7, 0.0, 0.0, 1.0,
+            ], {
+                fine: 1,
+                size: 5
+            });
+            
+            var sunCircle = createBuffer(sunCircleVertices);
+            
+            var ray1 = createSunRay([
+                -0.7, 0.25, 0.0, 0.0
+            ], {
+                size: 0.035,
+                rotate: 0
+            });
+            
+            var ray2 = createSunRay([
+                -0.625, 0.0, 0.0, 0.0
+            ], {
+                size: 0.045,
+                rotate: -1.6
+            });
+            
+            var ray3 = createSunRay([
+                -0.7, -0.25, 0.0, 0.0
+            ], {
+                size: 0.035,
+                rotate: 3.15
+            });
+            
+            var ray4 = createSunRay([
+                -0.775, 0.0, 0.0, 0.0
+            ], {
+                size: 0.045,
+                rotate: 1.6
+            });
+            
+            var ray5 = createSunRay([
+                -0.77, 0.12, 0.0, 0.0
+            ], {
+                size: 0.045,
+                rotate: 0.7
+            });
+            
+            var ray6 = createSunRay([
+                -0.63, 0.12, 0.0, 0.0
+            ], {
+                size: 0.045,
+                rotate: -0.7
+            });
+            
+            var ray7 = createSunRay([
+                -0.63, -0.12, 0.0, 0.0
+            ], {
+                size: 0.045,
+                rotate: -2.5
+            });
+            
+            var ray8 = createSunRay([
+                -0.77, -0.12, 0.0, 0.0
+            ], {
+                size: 0.045,
+                rotate: 2.5
+            });
+            
+            var star1 = createStar([
+                -0.90, 0.65, 0.0, 1.0
+            ], {
+                size: 0.065,
+                rotate: 0.25
+            });
+            
+            var star2 = createStar([
+                -0.90, -0.65, 0.0, 1.0
+            ], {
+                size: 0.065,
+                rotate: 0.15
+            });
+            
+            var star3 = createStar([
+                -0.30, 0, 0.0, 1.0
+            ], {
+                size: 0.065,
+                rotate: -0.25
+            });
+            
+            // render scene
+            drawRectangle(topRect, {
+                red: 0.0,
+                green: 0.219607843,
+                blue: 0.658823529
+            });
+            
+            drawRectangle(bottomRect, {
+                red: 0.807843137,
+                green: 0.066666667,
+                blue: 0.149019608
+            });
+            
+            drawTriangle(triangleMain, {
+                red: 1.0,
+                green: 1.0,
+                blue: 1.0
+            });
+            
+            drawCircle(sunCircle, {
+                pointsCount: sunCircleVertices.length,
+                red: 0.988235294,
+                green: 0.819607843,
+                blue: 0.08627451
+            });
+            
+            drawRay(ray1, {
+                red: 0.988235294,
+                green: 0.819607843,
+                blue: 0.08627451
+            });
+            
+            drawRay(ray2, {
+                red: 0.988235294,
+                green: 0.819607843,
+                blue: 0.08627451
+            });
+            
+            drawRay(ray3, {
+                red: 0.988235294,
+                green: 0.819607843,
+                blue: 0.08627451
+            });
+            
+            drawRay(ray4, {
+                red: 0.988235294,
+                green: 0.819607843,
+                blue: 0.08627451
+            });
+            
+            drawRay(ray5, {
+                red: 0.988235294,
+                green: 0.819607843,
+                blue: 0.08627451
+            });
+            
+            drawRay(ray6, {
+                red: 0.988235294,
+                green: 0.819607843,
+                blue: 0.08627451
+            });
+            
+            drawRay(ray7, {
+                red: 0.988235294,
+                green: 0.819607843,
+                blue: 0.08627451
+            });
+            
+            drawRay(ray8, {
+                red: 0.988235294,
+                green: 0.819607843,
+                blue: 0.08627451
+            });
+            
+            drawStar(star1, {
+                red: 0.988235294,
+                green: 0.819607843,
+                blue: 0.08627451
+            });
+            
+            drawStar(star2, {
+                red: 0.988235294,
+                green: 0.819607843,
+                blue: 0.08627451
+            });
+            
+            drawStar(star3, {
+                red: 0.988235294,
+                green: 0.819607843,
+                blue: 0.08627451
+            });
+            
+            // function helpers
+            function createBuffer(vertices) {
+                var buffer = gl.createBuffer();
+                gl.bindBuffer(gl.ARRAY_BUFFER,buffer); //bind buffer to gl.ARRAY_BUFFER so we can use gl.bufferData()
+                gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(vertices),gl.STATIC_DRAW);
+                gl.bindBuffer(gl.ARRAY_BUFFER,null);
+                
+                return buffer;
+            }
+            
+            function createCircle(vertices, options) {
+                var ret = vertices;
+                
+                // convert to circle
+                for(var theta = 0; theta < 360; theta += options.fine) {
+                    ret.push(Math.cos(theta) / yRatio(options.size) + ret[0]);
+                    ret.push(Math.sin(theta) / options.size + ret[1]);
+                    ret.push(0.0);
+                    ret.push(1.0);
+                }
+                
+                return ret;
+            }
+            
+            function createSunRay(vertices, options) {
+                var size = options.size;
+                
+                // create left ray
+                var leftRay = createBuffer(rotate([
+                    vertices[0] - (size / 5) - (size), vertices[1] - yRatio(size / 1.05), 0.0, 1.0,
+                    vertices[0] - (size / 5) - (size), vertices[1] + yRatio(size / 0.75), 0.0, 1.0,
+                    vertices[0] + (size / 5) - (size), vertices[1] + yRatio(size / 0.5), 0.0, 1.0,
+                    vertices[0] + (size / 5) - (size), vertices[1] - yRatio(size / 1.05), 0.0, 1.0
+                ], options.rotate + 0.175, vertices[0], vertices[1]));
+                
+                // create mid ray
+                var midRay = createMidRay(vertices, options);
+                
+                // create right ray
+                var rightRay = createBuffer(rotate([
+                    vertices[0] - (size / 5) + (size), vertices[1] - yRatio(size / 1.05), 0.0, 1.0,
+                    vertices[0] - (size / 5) + (size), vertices[1] + yRatio(size / 0.5), 0.0, 1.0,
+                    vertices[0] + (size / 5) + (size), vertices[1] + yRatio(size / 0.75), 0.0, 1.0,
+                    vertices[0] + (size / 5) + (size), vertices[1] - yRatio(size / 1.05), 0.0, 1.0
+                ], options.rotate - 0.175, vertices[0], vertices[1]));
+                
+                return [leftRay, midRay, rightRay];
+            }
+            
+            function createMidRay(vertices, options) {
+                var size = options.size;
+                
+                // rectangle
+                var rect = createBuffer(rotate([
+                    vertices[0] - (size / 4), vertices[1] - yRatio(size), 0.0, 1.0,
+                    vertices[0] - (size / 2.5), vertices[1] + yRatio(size / 0.5), 0.0, 1.0,
+                    vertices[0] + (size / 2.5), vertices[1] + yRatio(size / 0.5), 0.0, 1.0,
+                    vertices[0] + (size / 4), vertices[1] - yRatio(size), 0.0, 1.0
+                ], options.rotate, vertices[0], vertices[1]));
+                
+                //triangle
+                var triangle = createBuffer(rotate([
+                    vertices[0] - (size / 2.5), vertices[1] + yRatio(size / 0.5), 0.0, 1.0,
+                    vertices[0], vertices[1] + yRatio(size / 0.35), 0.0, 1.0,
+                    vertices[0] + (size / 2.5), vertices[1] + yRatio(size / 0.5), 0.0, 1.0,
+                ], options.rotate, vertices[0], vertices[1]));
+                
+                return [rect, triangle];
+            }
+            
+            function createStar(vertices, options) {
+                var x = vertices[0];
+                var y = vertices[1];
+                
+                var size = options.size;
+                
+                // triangle 1
+                var triangle1Buffer = createBuffer(rotate([
+                    x - size, y + yRatio(size / 3), 0.0, 1.0,
+                    x + size, y + yRatio(size / 3), 0.0, 1.0,
+                    x, y - yRatio(size / 3), 0.0, 1.0
+                ], options.rotate, x, y));
+                
+                // triangle 2
+                var triangle2Buffer = createBuffer(rotate([
+                    x - (size) / 1.5, y - yRatio(size), 0.0, 1.0,
+                    x, y + yRatio(size), 0.0, 1.0,
+                    x + (size) / 3, y, 0.0, 1.0
+                ], options.rotate, x, y));
+                
+                // triangle 3
+                var triangle3Buffer = createBuffer(rotate([
+                    x, y + yRatio(size), 0.0, 1.0,
+                    x + (size) / 1.5, y - yRatio(size), 0.0, 1.0,
+                    x - (size) / 3, y, 0.0, 1.0
+                ], options.rotate, x, y));
+                
+                return [triangle1Buffer, triangle2Buffer, triangle3Buffer];
+            }
+            
+            function yRatio(x) {
+                return x / (2/3);
+            }
+            
+            function drawRectangle(buffer, options) {
+                gl.bindBuffer(gl.ARRAY_BUFFER,buffer);
+                gl.vertexAttribPointer(aPositionPointer,4,gl.FLOAT,false,0,0);
+                gl.enableVertexAttribArray(aPositionPointer);
+                gl.uniform4f(uFragColorPointer, options.red, options.green, options.blue,1.0);
+                gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
+            }
+            
+            function drawTriangle(buffer, options) {
+                gl.bindBuffer(gl.ARRAY_BUFFER,buffer);
+                gl.vertexAttribPointer(aPositionPointer,4,gl.FLOAT,false,0,0);
+                gl.enableVertexAttribArray(aPositionPointer);
+                gl.uniform4f(uFragColorPointer, options.red, options.green, options.blue,1.0);
+                gl.drawArrays(gl.TRIANGLES, 0, 3);
+            }
+            
+            function drawCircle(buffer, options) {
+                gl.bindBuffer(gl.ARRAY_BUFFER,buffer);
+                gl.vertexAttribPointer(aPositionPointer,4,gl.FLOAT,false,0,0);
+                gl.enableVertexAttribArray(aPositionPointer);
+                gl.uniform4f(uFragColorPointer, options.red, options.green, options.blue,1.0);
+                gl.drawArrays(gl.TRIANGLE_FAN, 0, options.pointsCount / 4);
+            }
+            
+            function drawRay(ray, options) {
+                // draw left ray
+                drawRectangle(ray[0], options);
+                
+                // draw mid ray
+                drawRectangle(ray[1][0], options);
+                drawTriangle(ray[1][1], options);
+                
+                // draw right ray
+                drawRectangle(ray[2], options);
+            }
+            
+            function drawStar(star, options) {
+                star.forEach(function (triangle) {
+                    drawTriangle(triangle, options);
+                });
+            }
+            
+            function rotate(vertices, theta, originX, originY) {
+                var rotated = [];
+                
+                for(var i = 0; i < vertices.length; i += 4) {
+                    var multiply = [];
+                    
+                    multiply[0] = originX + (vertices[i]-originX)*Math.cos(theta) - (vertices[i + 1]-originY)*Math.sin(theta);
+                    multiply[1] = originY + (vertices[i]-originX)*Math.sin(theta) + (vertices[i + 1]-originY)*Math.cos(theta);
+   
+                    rotated.push(multiply[0], multiply[1], 0.0, 1.0);
+                }
+                
+                return rotated;
+            }
+        }
+    </script>
+    
+    <style>
+        body {
+            height: 100%;
+            background: url(assets/philippines.jpg);
+            background-size: cover;
+        }
+        
+        h1 {
+            font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+            color: rgba(240, 240, 240, 1);
+            text-shadow: 0px 0px 10px black;
+        }
+    </style>
+</head>
+
+<body onload="main()">
+    <div style="margin:auto;width:600px">
+        <canvas id="main_canvas" width="600" height="400" style="border: 1px black solid">
+        </canvas>
+
+        <h1 style="text-align:center">        
+            Flag of the Philippines
+        </h1>
+    </div>
+
+</body>
+
+</html>

@@ -1,0 +1,17 @@
+INTRODUCTION
+Express
+What is express
+Why use express
+Server client architecture
+Generating a project
+Directory/Files
+app.js
+Router
+HTTP requests
+Router HTTP requests
+
+---------
+
+TYING IT UP WITH ANGULAR
+Serving pages and api
+Services

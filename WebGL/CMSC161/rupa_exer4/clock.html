@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>
+        Clock
+    </title>
+    <!--Vertex Shader-->
+    <script type="x-shader/x-vertex" id="vshader">
+      attribute vec4 aPosition;
+      uniform mat4 uTransformationMatrix;
+      
+      void main() {
+
+        gl_Position = uTransformationMatrix * aPosition;
+        gl_PointSize = 10.0;
+      }
+    </script>
+
+    <!--Fragment Shader-->
+    <script type="x-shader/x-fragment" id="fshader">
+        precision mediump float;
+
+        uniform vec4 uFragColor;
+        void main() {
+            gl_FragColor = uFragColor;
+        }
+    </script>
+
+    <!--Import external javascript file-->
+    <!--Helper javascript methods for initializing webgl-->
+    <script src="./lib/webgl-init.js"></script>
+    <script src="./lib/webgl-utils.js"></script>
+    <script src="./lib/webgl-debug.js"></script>
+    <script src="./lib/gl-matrix.js"></script>
+    <script src="./lib/jquery-1.12.1.min.js"></script>
+
+    <script>
+        function main() {
+            //Retrieve <canvas> element
+            var canvas = document.getElementById("main_canvas");
+            if(!canvas) {
+                console.log("Failed to retrieve the <canvas> element");
+            }
+
+            //Get the rendering context (WebGL)
+            var gl = initializeWebGL(canvas,true);
+
+            //initialize shaders program
+            var vertexShader = initializeShader(gl,"vshader");
+            var fragmentShader = initializeShader(gl, "fshader");
+            var program = initializeProgram(gl,vertexShader,fragmentShader);
+            gl.useProgram(program);
+
+            //Get the storage location of shader variables
+            var aPositionPointer = gl.getAttribLocation(program,"aPosition");
+            gl.enableVertexAttribArray(aPositionPointer);
+            var uFragColorPointer = gl.getUniformLocation(program,"uFragColor");
+            var uTransformationMatrixPointer = gl.getUniformLocation(program,"uTransformationMatrix");
+            
+            // declare buffers
+            var clockBodyOuter = createCircle([
+                0.0, 0.0, 0.0, 1.0
+            ], {
+                fine: 1,
+                size: 1
+            });
+            
+            var clockBodyOuterBuffer = createBuffer(clockBodyOuter);
+            
+            var clockBodyInner = createCircle([
+                0.0, 0.0, 0.0, 1.0
+            ], {
+                fine: 1,
+                size: 1.1
+            });
+            
+            var clockBodyInnerBuffer = createBuffer(clockBodyInner);
+            
+            var timeCircle = createCircle([
+                0.0, 0.0, 0.0, 1.0
+            ], {
+                fine: 1,
+                size: 40
+            });
+            
+            var timeCircleBuffer = createBuffer(timeCircle);
+            
+            var hourCenter = createBuffer([
+                -0.05, 0.05, 0.0, 1.0,
+                0.05, 0.05, 0.0, 1.0,
+                0.05, -0.05, 0.0, 1.0,
+                -0.05, -0.05, 0.0, 1.0,
+            ]);
+            
+            var hourBody = createBuffer([
+                -0.015, 0.475, 0.0, 1.0,
+                0.015, 0.475, 0.0, 1.0,
+                0.015, 0.0, 0.0, 1.0,
+                -0.015, 0.0, 0.0, 1.0,
+            ]);
+            
+            var minutesBody = createBuffer([
+                -0.015, 0.6, 0.0, 1.0,
+                0.015, 0.6, 0.0, 1.0,
+                0.015, 0.0, 0.0, 1.0,
+                -0.015, 0.0, 0.0, 1.0,
+            ]);
+            
+            var secondsBody = createBuffer([
+                -0.0075, 0.65, 0.0, 1.0,
+                0.0075, 0.65, 0.0, 1.0,
+                0.0075, 0.0, 0.0, 1.0,
+                -0.0075, 0.0, 0.0, 1.0,
+            ]);
+            
+            // draw scenes
+            function render() {
+                drawCircle(clockBodyOuterBuffer, {
+                    red: 0.25,
+                    green: 0.25,
+                    blue: 0.25,
+                    pointsCount: clockBodyOuter.length
+                });
+                
+                drawCircle(clockBodyInnerBuffer, {
+                    red: 0.95,
+                    green: 0.95,
+                    blue: 0.95,
+                    pointsCount: clockBodyInner.length
+                });
+                
+                drawRectangle(hourCenter, {
+                    red: 0.15,
+                    green: 0.15,
+                    blue: 0.15,
+                    rotate: hourAngle()
+                });
+                
+                drawRectangle(hourBody, {
+                    red: 0.15,
+                    green: 0.15,
+                    blue: 0.15,
+                    rotate: hourAngle()
+                });
+                
+                drawRectangle(minutesBody, {
+                    red: 0.15,
+                    green: 0.15,
+                    blue: 0.15,
+                    rotate: minuteAngle()
+                });
+                
+                drawRectangle(secondsBody, {
+                    red: 0.15,
+                    green: 0.15,
+                    blue: 0.15,
+                    rotate: secondAngle()
+                });
+                
+                // numbers
+                
+                // 12
+                drawCircle(timeCircleBuffer, {
+                    red: 0.15,
+                    green: 0.15,
+                    blue: 0.15,
+                    pointsCount: timeCircle.length,
+                    translate: [0.0, 0.7, 0]
+                });
+                
+                // 11
+                drawCircle(timeCircleBuffer, {
+                    red: 0.15,
+                    green: 0.15,
+                    blue: 0.15,
+                    pointsCount: timeCircle.length,
+                    translate: [-0.35, 0.606218, 0]
+                });
+                
+                // 10
+                drawCircle(timeCircleBuffer, {
+                    red: 0.15,
+                    green: 0.15,
+                    blue: 0.15,
+                    pointsCount: timeCircle.length,
+                    translate: [-0.606218, 0.35, 0]
+                });
+                
+                // 9
+                drawCircle(timeCircleBuffer, {
+                    red: 0.15,
+                    green: 0.15,
+                    blue: 0.15,
+                    pointsCount: timeCircle.length,
+                    translate: [-0.7, 0, 0]
+                });
+                
+                // 8
+                drawCircle(timeCircleBuffer, {
+                    red: 0.15,
+                    green: 0.15,
+                    blue: 0.15,
+                    pointsCount: timeCircle.length,
+                    translate: [-0.606218, -0.35, 0]
+                });
+                
+                // 7
+                drawCircle(timeCircleBuffer, {
+                    red: 0.15,
+                    green: 0.15,
+                    blue: 0.15,
+                    pointsCount: timeCircle.length,
+                    translate: [-0.35, -0.606218, 0]
+                });
+                
+                // 6
+                drawCircle(timeCircleBuffer, {
+                    red: 0.15,
+                    green: 0.15,
+                    blue: 0.15,
+                    pointsCount: timeCircle.length,
+                    translate: [0.0, -0.7, 0]
+                });
+                
+                // 5
+                drawCircle(timeCircleBuffer, {
+                    red: 0.15,
+                    green: 0.15,
+                    blue: 0.15,
+                    pointsCount: timeCircle.length,
+                    translate: [0.35, -0.606218, 0]
+                });
+                
+                // 4
+                drawCircle(timeCircleBuffer, {
+                    red: 0.15,
+                    green: 0.15,
+                    blue: 0.15,
+                    pointsCount: timeCircle.length,
+                    translate: [0.606218, -0.35, 0]
+                });
+                
+                // 3
+                drawCircle(timeCircleBuffer, {
+                    red: 0.15,
+                    green: 0.15,
+                    blue: 0.15,
+                    pointsCount: timeCircle.length,
+                    translate: [0.7, 0, 0]
+                });
+                
+                // 2
+                drawCircle(timeCircleBuffer, {
+                    red: 0.15,
+                    green: 0.15,
+                    blue: 0.15,
+                    pointsCount: timeCircle.length,
+                    translate: [0.606218, 0.35, 0]
+                });
+                
+                // 1
+                drawCircle(timeCircleBuffer, {
+                    red: 0.15,
+                    green: 0.15,
+                    blue: 0.15,
+                    pointsCount: timeCircle.length,
+                    translate: [0.35, 0.606218, 0]
+                });
+                
+                requestAnimationFrame(render);
+            }
+            
+            render();
+            
+            // function helpers
+            function createBuffer(vertices, options) {
+                var buffer = gl.createBuffer();
+                gl.bindBuffer(gl.ARRAY_BUFFER,buffer); //bind buffer to gl.ARRAY_BUFFER so we can use gl.bufferData()
+                gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(vertices),gl.STATIC_DRAW);
+                gl.bindBuffer(gl.ARRAY_BUFFER,null);
+                
+                return buffer;
+            }
+            
+            function createCircle(vertices, options) {
+                var ret = vertices;
+                
+                // convert to circle
+                for(var theta = 0; theta < 360; theta += options.fine) {
+                    ret.push(Math.cos(theta) / options.size + ret[0]);
+                    ret.push(Math.sin(theta) / options.size + ret[1]);
+                    ret.push(0.0);
+                    ret.push(1.0);
+                }
+                
+                return ret;
+            }
+            
+            function createCurve(vertices) {
+                var p0 = {
+                    x: vertices[0],
+                    y: vertices[1]
+                };
+                
+                var p1 = {
+                    x: vertices[4],
+                    y: vertices[5]
+                };
+                
+                var p2 = {
+                    x: vertices[8],
+                    y: vertices[9]
+                };
+                
+                var ret = [];
+                
+                for(var i = 0; i < 1; i += 0.01) {
+                    var point = bezier(i, p0, p1, p2);
+                    
+                    ret.push(point.x);
+                    ret.push(point.y);
+                    ret.push(0.0);
+                    ret.push(1.0);
+                }
+                
+                return ret;
+            }
+            
+            function createShape(vertices) {
+                var ret = [];
+                
+                for(var i = 0; i < vertices.length - 8; i += 8) {
+                    var p0 = [
+                        vertices[i], vertices[i + 1], 0.0, 1.0
+                    ];
+                    
+                    var offset = [
+                        vertices[i + 4], vertices[i + 5], 0.0, 1.0
+                    ];
+                    
+                    var p1 = [
+                        vertices[i + 8], vertices[i + 9], 0.0, 1.0
+                    ];
+                    
+                    var points = createCurve([...p0, ...offset, ...p1]);
+                    
+                    ret = [...ret, ...points];
+                }
+                
+                return ret;
+            }
+            
+            function drawRectangle(buffer, options) {
+                var transformationMatrix = mat4.create();
+                var angleOfRotation = (360 - options.rotate) || 0;
+                var toRadians = glMatrix.toRadian(angleOfRotation);
+                mat4.rotateZ(transformationMatrix,transformationMatrix,toRadians);
+                gl.uniformMatrix4fv(uTransformationMatrixPointer,false,new Float32Array(transformationMatrix)); 
+                
+                gl.bindBuffer(gl.ARRAY_BUFFER,buffer);
+                gl.vertexAttribPointer(aPositionPointer,4,gl.FLOAT,false,0,0);
+                gl.enableVertexAttribArray(aPositionPointer);
+                gl.uniform4f(uFragColorPointer, options.red, options.green, options.blue,1.0);
+                gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
+            }
+            
+            function drawLine(buffer, options) {
+                var transformationMatrix = mat4.create();
+                var angleOfRotation = (360 - options.rotate) || 0;
+                var toRadians = glMatrix.toRadian(angleOfRotation);
+                mat4.rotateZ(transformationMatrix,transformationMatrix,toRadians);
+                gl.uniformMatrix4fv(uTransformationMatrixPointer,false,new Float32Array(transformationMatrix)); 
+                
+                gl.bindBuffer(gl.ARRAY_BUFFER,buffer);
+                gl.vertexAttribPointer(aPositionPointer,4,gl.FLOAT,false,0,0);
+                gl.enableVertexAttribArray(aPositionPointer);
+                gl.uniform4f(uFragColorPointer, options.red, options.green, options.blue,1.0);
+                gl.drawArrays(gl.LINES, 0, 2);
+            }
+            
+            function drawLines(buffer, options) {
+                var transformationMatrix = mat4.create();
+                var angleOfRotation = (360 - options.rotate) || 0;
+                var toRadians = glMatrix.toRadian(angleOfRotation);
+                mat4.rotateZ(transformationMatrix,transformationMatrix,toRadians);
+                gl.uniformMatrix4fv(uTransformationMatrixPointer,false,new Float32Array(transformationMatrix)); 
+                
+                gl.bindBuffer(gl.ARRAY_BUFFER,buffer);
+                gl.vertexAttribPointer(aPositionPointer,4,gl.FLOAT,false,0,0);
+                gl.enableVertexAttribArray(aPositionPointer);
+                gl.uniform4f(uFragColorPointer, options.red, options.green, options.blue,1.0);
+                gl.drawArrays(gl.LINE_STRIP, 0, options.length / 4);
+            }
+            
+            function drawShape(buffer, options) {
+                var transformationMatrix = mat4.create();
+                var angleOfRotation = (360 - options.rotate) || 0;
+                var toRadians = glMatrix.toRadian(angleOfRotation);
+                mat4.rotateZ(transformationMatrix,transformationMatrix,toRadians);
+                gl.uniformMatrix4fv(uTransformationMatrixPointer,false,new Float32Array(transformationMatrix)); 
+                
+                gl.bindBuffer(gl.ARRAY_BUFFER,buffer);
+                gl.vertexAttribPointer(aPositionPointer,4,gl.FLOAT,false,0,0);
+                gl.enableVertexAttribArray(aPositionPointer);
+                gl.uniform4f(uFragColorPointer, options.red, options.green, options.blue, 1.0);
+                gl.drawArrays(gl.TRIANGLE_FAN, 0, options.length / 4);
+            }
+            
+            function drawTriangle(buffer, options) {
+                var transformationMatrix = mat4.create();
+                var angleOfRotation = (360 - options.rotate) || 0;
+                var toRadians = glMatrix.toRadian(angleOfRotation);
+                mat4.rotateZ(transformationMatrix,transformationMatrix,toRadians);
+                gl.uniformMatrix4fv(uTransformationMatrixPointer,false,new Float32Array(transformationMatrix)); 
+                
+                gl.bindBuffer(gl.ARRAY_BUFFER,buffer);
+                gl.vertexAttribPointer(aPositionPointer,4,gl.FLOAT,false,0,0);
+                gl.enableVertexAttribArray(aPositionPointer);
+                gl.uniform4f(uFragColorPointer, options.red, options.green, options.blue,1.0);
+                gl.drawArrays(gl.TRIANGLES, 0, 3);
+            }
+            
+            function drawCircle(buffer, options) {
+                var transformationMatrix = mat4.create();
+                var angleOfRotation = (360 - options.rotate) || 0;
+                var translateVector = options.translate || [0, 0, 0];
+                var toRadians = glMatrix.toRadian(angleOfRotation);
+                mat4.translate(transformationMatrix,transformationMatrix, translateVector);
+                mat4.rotateZ(transformationMatrix,transformationMatrix,toRadians);
+                gl.uniformMatrix4fv(uTransformationMatrixPointer,false,new Float32Array(transformationMatrix)); 
+                
+                gl.bindBuffer(gl.ARRAY_BUFFER,buffer);
+                gl.vertexAttribPointer(aPositionPointer,4,gl.FLOAT,false,0,0);
+                gl.enableVertexAttribArray(aPositionPointer);
+                gl.uniform4f(uFragColorPointer, options.red, options.green, options.blue,1.0);
+                gl.drawArrays(gl.TRIANGLE_FAN, 0, options.pointsCount / 4);
+            }
+            
+            // formula from https://en.wikipedia.org/wiki/B%C3%A9zier_curve
+            function bezier(t, p0, p1, p2)  {
+                var a = mul(Math.pow((1 - t), 2), p0);
+                var b = mul(2 * (1 - t) * t, p1);  
+                var c = mul(Math.pow(t, 2), p2);
+                 
+                return  add(add(a, b), c);
+            }
+            
+            function add(p1, p2) {
+                return {
+                    x: p1.x + p2.x,
+                    y: p1.y + p2.y
+                };
+            }
+            
+            function sub(p1, p2) {
+                return {
+                    x: p1.x - p2.x,
+                    y: p1.y - p2.y
+                };
+            }
+            
+            function mul(c, p2) {
+                return {
+                    x: c * p2.x,
+                    y: c * p2.y
+                };
+            }
+            
+            function hourAngle() {
+                var hour = new Date();
+                var minutes = new Date();
+                
+                hour = hour.getHours();
+                minutes = minutes.getMinutes();
+                
+                hour = hour > 12? hour - 12: hour;
+                
+                return 0.5 * (60 * hour + minutes);
+            }
+            
+            function minuteAngle() {
+                var minutes = new Date();
+                
+                minutes = minutes.getMinutes();
+                
+                return 6 * minutes;
+            }
+            
+            function secondAngle() {
+                var second = new Date();
+                
+                second = second.getSeconds();
+                
+                console.log((second / 60) * 360);
+                
+                return (second / 60) * 360;
+            }
+        }
+    </script>
+    
+    <style>
+        body {
+            height: 100%;
+            background: url(./assets/bg.jpg);
+            background-size: cover;
+        }
+        
+        h1 {
+            font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+            color: rgba(240, 240, 240, 1);
+            text-shadow: 0px 0px 15px black;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body onload="main()">    
+    <div style="margin:auto;width:400px">
+        <canvas id="main_canvas" width="400" height="400">
+        </canvas>
+    </div>
+    <h1>Time is running.</h1>
+</body>
+
+</html>

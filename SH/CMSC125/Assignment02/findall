@@ -1,0 +1,67 @@
+#!/bin/bash
+
+# colors
+NC='\033[0m'
+GREEN='\033[0;32m'
+BLUE='\033[0;34m'
+PURPLE='\033[0;35m'
+
+if [ $# -eq 0 ]
+then
+    echo No argument given
+    exit
+elif [ $# -gt 1 ]
+then
+    echo Too many arguments
+    exit
+fi
+
+input=$1
+
+if [ "$input" = "dir" ]
+then
+    for n in *
+    do
+        # check if directory
+        if [[ -d $n ]]
+        then
+            printf "${PURPLE}$n\n${NC}"
+        fi
+    done
+elif [ "$input" = "all" ]
+then
+    for n in *
+    do
+        # check if directory
+        if [[ -d $n ]]
+        then
+            COLOR=$PURPLE
+        # check if executable
+        elif [[ -x $n ]]
+        then
+            COLOR=$GREEN
+        # regular files
+        else
+            COLOR=$BLUE
+        fi
+        printf "${COLOR}$n\n${NC}"
+    done
+else
+    for n in *
+    do
+        extension=".$input"
+        # compare file extension with argument
+        if [[ ${n: -${#extension}} == $extension ]]
+        then
+            # check if executable
+            if [[ -x $n ]]
+            then
+                COLOR=$GREEN
+            # regular files
+            else
+                COLOR=$BLUE
+            fi
+            printf "${COLOR}$n\n${NC}"
+        fi
+    done
+fi

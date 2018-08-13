@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><!--Created with JFLAP 6.4.--><structure>
+	<type>lsystem</type>
+	<!--The L-system axiom.-->
+	<axiom>A</axiom>
+	<!--The rewriting rules.-->
+	<production>
+		<left>A</left>
+		<right>+ g g g g B g g</right>
+	</production>
+	<production>
+		<left>B</left>
+		<right>g g [ - - - g g - - g g - - g g - - g g ] B</right>
+	</production>
+	<!--The drawing parameters.-->
+	<parameter>
+		<name>angle</name>
+		<value>45</value>
+	</parameter>
+	<parameter>
+		<name>distance</name>
+		<value>15</value>
+	</parameter>
+</structure>

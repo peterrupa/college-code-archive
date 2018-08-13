@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>
+      First WebGL Program
+  </title>
+
+  <!--Import external javascript file-->
+  <!--Helper javascript methods for initializing webgl-->
+  <script src="./lib/webgl-init.js"></script>
+  <script src="./lib/webgl-utils.js"></script>
+  <script src="./lib/webgl-debug.js"></script>
+
+  <!--Vertex Shader-->
+  <script type="x-shader/x-vertex" id="vshader">
+    //declare an attribute variable that can be accessed in our javascript program
+    attribute vec4 aPosition;
+    void main() {
+
+      //Built-in variable in GLSL ES that dictates the position of the vertex
+      gl_Position = aPosition;
+
+      //Built-in variable in GLSL ES that dictates the size of the vertex
+      gl_PointSize = 1.0;
+    }
+  </script>
+
+  <!--Fragment Shader-->
+  <script type="x-shader/x-fragment" id="fshader">
+    //specifies the precision qualifer for the variable float
+    precision mediump float;
+
+    //declare and uniform variable that can be accessed in our javascript program
+    uniform vec4 uFragColor;
+    void main() {
+
+
+      //Sets the color for every fragment created by primitive assembly
+      gl_FragColor = uFragColor;
+    }
+  </script>
+
+
+  <script>
+  function main() {
+    //Retrieve <canvas> element
+    var canvas = document.getElementById("main_canvas");
+    if(!canvas) {
+        console.log("Failed to retrieve the <canvas> element");
+    }
+
+    //Get the rendering context (WebGL)
+    var gl = initializeWebGL(canvas,true);
+
+    //initialize shaders program
+    var vertexShader = initializeShader(gl,"vshader");
+    var fragmentShader = initializeShader(gl, "fshader");
+    var program = initializeProgram(gl,vertexShader,fragmentShader);
+    gl.useProgram(program);
+
+    //clear canvas
+    gl.clearColor(1.0, 1.0, 1.0, 1.0);
+    gl.clear(gl.COLOR_BUFFER_BIT);
+
+    //Get the storage location of shader variables
+    var aPositionPointer = gl.getAttribLocation(program,"aPosition");
+    var uFragColorPointer = gl.getUniformLocation(program,"uFragColor");
+
+    /**VERTEX DATA DECLARATIONS**/
+    //vertex data specifications (square)
+    var circle = [
+        0.0, 0.0, 0.0, 1.0,
+    ];
+
+    makeCircle(circle);
+
+    var circle_buffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER,circle_buffer); //bind buffer to gl.ARRAY_BUFFER so we can use gl.bufferData()
+    gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(circle),gl.STATIC_DRAW);
+
+    gl.vertexAttribPointer(aPositionPointer, 4, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(aPositionPointer);
+
+    //draw buffer that is bound to ARRAY_BUFFER
+    gl.uniform4f(uFragColorPointer, 0.737254902, 0.0, 0.176470588,1.0);
+    gl.drawArrays(gl.TRIANGLE_FAN, 0, circle.length / 4);
+
+    //unbind the buffer
+    gl.bindBuffer(gl.ARRAY_BUFFER,null);
+
+    function makeCircle(circle) {
+        for(var theta = 0; theta < 360; theta += 0.5) {
+            circle.push(Math.cos(theta) / 2.25);
+            circle.push(Math.sin(theta) / 1.5);
+            circle.push(0.0);
+            circle.push(1.0);
+        }
+    }
+  }
+  </script>
+  
+  <style>
+      body {
+          height: 100%;
+          background: url(assets/japan.jpg);
+          background-size: cover;
+      }
+      
+      h1 {
+          font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+          color: rgba(240, 240, 240, 1);
+          text-shadow: 0px 0px 10px black;
+      }
+   </style>
+</head>
+
+<body onload="main()">
+    <div style="margin:auto;width:600px">
+        <canvas id="main_canvas" width="600" height="400" style="border: 1px black solid">
+        </canvas>
+
+        <h1 style="text-align:center">        
+            Flag of Japan 
+        </h1>
+    </div>
+	
+</body>
+</html>

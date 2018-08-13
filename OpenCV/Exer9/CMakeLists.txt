@@ -1,0 +1,5 @@
+cmake_minimum_required(VERSION 2.8)
+project( guiam_rupa_ex9 )
+find_package( OpenCV REQUIRED )
+add_executable( guiam_rupa_ex9 guiam_rupa_ex9.cpp )
+target_link_libraries( guiam_rupa_ex9 ${OpenCV_LIBS} )
